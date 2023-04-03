@@ -103,6 +103,9 @@ struct ContentView: View {
                     .sheet(isPresented: $isShowingConversationSettings) {
                         ConversationSettingsView(conversation: selection)
                     }
+                    .onAppear {
+                        try? viewContext.save()
+                    }
             } else {
                 Text("Create a new conversation.")
                     .font(.headline)
