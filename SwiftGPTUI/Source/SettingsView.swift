@@ -23,6 +23,9 @@ struct SettingsView: View {
     
     @State
     private var isShowingResetConversationConfirmation = false
+    
+    @State
+    private var isShowingConfirmedParamReset = false
         
     @EnvironmentObject
     private var settings: ObservableSettings
@@ -94,12 +97,23 @@ struct SettingsView: View {
                 .disabled(!settings.isKeyValid)
 
                 Section {
+                    Button("Reset Parameters", role: .destructive) {
+                        settings.temperature = 0.7
+                        settings.topP = 1
+                        settings.frequencyPenalty = 0
+                        settings.presencePenalty = 0
+                        isShowingConfirmedParamReset = true
+                    }
+                    .bold()
                     Button("Reset Conversation", role: .destructive) {
                         isShowingResetConversationConfirmation.toggle()
                     }
                     .bold()
                 }
                 .disabled(!settings.isKeyValid)
+            }
+            .alert("Parameters reset to defaults", isPresented: $isShowingConfirmedParamReset) {
+                Button("Okay") {}
             }
             .alert("Reset Conversation", isPresented: $isShowingResetConversationConfirmation) {
                 Button("Reset", role: .destructive) {
