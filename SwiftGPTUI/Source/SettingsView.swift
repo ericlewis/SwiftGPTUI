@@ -95,7 +95,6 @@ struct SettingsView: View {
 
                 Section {
                     Button("Reset Conversation", role: .destructive) {
-                        resetConversationHistory()
                         isShowingResetConversationConfirmation.toggle()
                     }
                     .bold()
@@ -105,7 +104,7 @@ struct SettingsView: View {
             }
             .alert("Reset Conversation", isPresented: $isShowingResetConversationConfirmation) {
                 Button("Reset", role: .destructive) {
-                    
+                    resetConversationHistory()
                 }
             } message: {
                 Text("Please confirm if you would like to reset your conversation history.")
