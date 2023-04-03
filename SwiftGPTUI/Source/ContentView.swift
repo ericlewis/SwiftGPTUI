@@ -31,9 +31,7 @@ struct ContentView: View {
         }
         .task {
             do {
-                var request = URLRequest(url: URL(string: "https://api.openai.com/v1/models")!)
-                request.addValue("Bearer \(settings.apiKey)", forHTTPHeaderField: "Authorization")
-                let (_, response) = try await URLSession.shared.data(for: request)
+                let (_, response) = try await settings.fetchModels()
                 if ((response as? HTTPURLResponse)?.statusCode ?? 500) > 399 {
                     isShowingSettings = true
                 }
