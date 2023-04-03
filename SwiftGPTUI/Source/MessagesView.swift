@@ -42,26 +42,8 @@ struct MessagesView: UIViewControllerRepresentable {
     @State
     private var initialized = false
     
-    @Binding
-    var apiKey: String
-    
-    @Binding
-    var model: Model
-    
-    @Binding
-    var systemPrompt: String
-    
-    @Binding
-    var temperature: Double
-    
-    @Binding
-    var topP: Double
-    
-    @Binding
-    var frequencyPenalty: Double
-    
-    @Binding
-    var presencePenalty: Double
+    @EnvironmentObject
+    private var settings: ObservableSettings
     
     @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \Message.sentDateInternal, ascending: true)], animation: .default)
     private var messages: FetchedResults<Message>
@@ -85,12 +67,12 @@ struct MessagesView: UIViewControllerRepresentable {
     }
     
     func updateUIViewController(_ uiViewController: MessagesViewController, context ctx: Context) {
-        ctx.coordinator.systemPrompt = systemPrompt
-        ctx.coordinator.frequencyPenalty = frequencyPenalty
-        ctx.coordinator.presencePenalty = presencePenalty
-        ctx.coordinator.temperature = temperature
-        ctx.coordinator.topP = topP
-        ctx.coordinator.openAI = OpenAI(apiToken: apiKey)
+        ctx.coordinator.systemPrompt = settings.systemPrompt
+        ctx.coordinator.frequencyPenalty = settings.frequencyPenalty
+        ctx.coordinator.presencePenalty = settings.presencePenalty
+        ctx.coordinator.temperature = settings.temperature
+        ctx.coordinator.topP = settings.topP
+        ctx.coordinator.openAI = OpenAI(apiToken: settings.apiKey)
         ctx.coordinator.messages = messages
         uiViewController.messagesCollectionView.reloadData()
         scrollToBottom(uiViewController)

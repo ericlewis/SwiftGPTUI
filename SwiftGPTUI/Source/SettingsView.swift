@@ -27,58 +27,30 @@ struct SettingsView: View {
     @State
     private var models = [Model.gpt3_5Turbo]
         
-    @Binding
-    var temperature: Double
-    
-    @Binding
-    var topP: Double
-    
-    @Binding
-    var frequencyPenalty: Double
-    
-    @Binding
-    var presencePenalty: Double
-    
-    @Binding
-    var systemPrompt: String
-    
-    @Binding
-    var apiKey: String
-    
-    @Binding
-    var model: Model
-    
-    var isKeyValid: Bool {
-        do {
-            let regex = try NSRegularExpression(pattern: "sk-\\w{20}T3BlbkFJ\\w{20}", options: [])
-            let matches = regex.matches(in: apiKey, options: [], range: NSRange(location: 0, length: apiKey.utf16.count))
-            return !matches.isEmpty
-        } catch {
-            return false
-        }
-    }
-    
+    @EnvironmentObject
+    private var settings: ObservableSettings
+
     var body: some View {
         NavigationView {
             List {
                 Section {
                     HStack {
-                        TextField("API Key", text: $apiKey)
+                        TextField("API Key", text: settings.$apiKey)
                             .autocorrectionDisabled(true)
                             .textInputAutocapitalization(.never)
-                        Image(systemName: isKeyValid ? "checkmark.circle.fill" : "xmark.circle.fill")
-                            .foregroundStyle(isKeyValid ? .green : .red)
+                        Image(systemName: settings.isKeyValid ? "checkmark.circle.fill" : "xmark.circle.fill")
+                            .foregroundStyle(settings.isKeyValid ? .green : .red)
                     }
                 } footer: {
                     Text("**API key is required.** It is stored locally and is used only and directly with OpenAI. You can sign up for a developer account [here](https://platform.openai.com) in order to create a key.")
                 }
                 Section("Settings") {
-                    TextField("System prompt", text: $systemPrompt, axis: .vertical)
+                    TextField("System prompt", text: settings.$systemPrompt, axis: .vertical)
                         .onSubmit {
                             dismiss()
                         }
                     
-                    Picker(selection: $model) {
+                    Picker(selection: settings.$model) {
                         ForEach(models, id: \.self) {
                             Text($0.uppercased()).tag($0)
                         }
@@ -87,16 +59,16 @@ struct SettingsView: View {
                             .bold()
                     }
                     DisclosureGroup {
-                        ParameterView(title: "Temperature", bounds: 0...1, value: $temperature)
-                        ParameterView(title: "Top P", bounds: 0...1, value: $topP)
-                        ParameterView(title: "Frequency penalty", bounds: -2...2, value: $frequencyPenalty)
-                        ParameterView(title: "Presence penalty", bounds: -2...2, value: $presencePenalty)
+                        ParameterView(title: "Temperature", bounds: 0...1, value: settings.$temperature)
+                        ParameterView(title: "Top P", bounds: 0...1, value: settings.$topP)
+                        ParameterView(title: "Frequency penalty", bounds: -2...2, value: settings.$frequencyPenalty)
+                        ParameterView(title: "Presence penalty", bounds: -2...2, value: settings.$presencePenalty)
                     } label: {
                         Text("Parameters")
                             .bold()
                     }
                 }
-                .disabled(!isKeyValid)
+                .disabled(!settings.isKeyValid)
 
                 Section {
                     Button("Reset Conversation", role: .destructive) {
@@ -104,7 +76,7 @@ struct SettingsView: View {
                     }
                     .bold()
                 }
-                .disabled(!isKeyValid)
+                .disabled(!settings.isKeyValid)
 
             }
             .alert("Reset Conversation", isPresented: $isShowingResetConversationConfirmation) {
@@ -131,16 +103,16 @@ struct SettingsView: View {
                     Button("Done") {
                         dismiss()
                     }
-                    .disabled(!isKeyValid)
+                    .disabled(!settings.isKeyValid)
                 }
             }
         }
         .navigationViewStyle(.stack)
-        .interactiveDismissDisabled(!isKeyValid)
+        .interactiveDismissDisabled(!settings.isKeyValid)
         .task {
             do {
                 var request = URLRequest(url: URL(string: "https://api.openai.com/v1/models")!)
-                request.addValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+                request.addValue("Bearer \(settings.apiKey)", forHTTPHeaderField: "Authorization")
                 let (data, _) = try await URLSession.shared.data(for: request)
                 let result = try JSONDecoder().decode(_Model._Container.self, from: data)
                 let models = result.data.filter { model in
