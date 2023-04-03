@@ -9,18 +9,8 @@ struct ParameterView<Value: BinaryFloatingPoint>: View where Value.Stride: Binar
     var value: Value
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack {
-                Text(title)
-                    .foregroundStyle(.primary)
-                    .font(.footnote.weight(.semibold))
-                Spacer()
-                Text(Double(value), format: .number)
-            }
-            .font(.footnote.weight(.heavy))
-            .foregroundStyle(.secondary)
-            Slider(value: $value, in: bounds)
-        }
+        Text(title).badge(Text(Double(value), format: .number))
+        Slider(value: $value, in: bounds, step: 0.1)
     }
 }
 
@@ -45,6 +35,9 @@ struct SettingsView: View {
     
     @State
     private var presencePenalty = 0.0
+    
+    @State
+    private var models = [Model.gpt3_5Turbo]
     
     private let enableParameters = false
     
@@ -88,7 +81,7 @@ struct SettingsView: View {
                         }
                     
                     Picker(selection: $model) {
-                        ForEach([Model.gpt3_5Turbo, Model.gpt4], id: \.self) {
+                        ForEach(models, id: \.self) {
                             Text($0.uppercased()).tag($0)
                         }
                     } label: {
@@ -148,5 +141,31 @@ struct SettingsView: View {
         }
         .navigationViewStyle(.stack)
         .interactiveDismissDisabled(!isKeyValid)
+        .task {
+            do {
+                var request = URLRequest(url: URL(string: "https://api.openai.com/v1/models")!)
+                request.addValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+                let (data, _) = try await URLSession.shared.data(for: request)
+                let result = try JSONDecoder().decode(_Model._Container.self, from: data)
+                let models = result.data.filter { model in
+                    [
+                        Model.gpt3_5Turbo,
+                        Model.gpt3_5Turbo0301,
+                        Model.gpt4,
+                        Model.gpt4_0134,
+                        Model.gpt4_32k,
+                        Model.gpt4_32k_0314
+                    ].contains {
+                        $0 == model.id
+                    }
+                }
+                .map {
+                    $0.id
+                }
+                self.models = models
+            } catch {
+                print(error)
+            }
+        }
     }
 }

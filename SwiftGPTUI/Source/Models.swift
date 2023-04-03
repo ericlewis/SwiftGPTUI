@@ -1,5 +1,6 @@
 import Foundation
 import MessageKit
+import OpenAI
 
 struct Sender: SenderType {
     public var senderId: String
@@ -24,4 +25,12 @@ extension Message: MessageType {
     public var kind: MessageKind {
         .text(text!)
     }
+}
+
+struct _Model: Decodable {
+    struct _Container: Decodable {
+        let data: [_Model]
+    }
+    
+    let id: Model
 }

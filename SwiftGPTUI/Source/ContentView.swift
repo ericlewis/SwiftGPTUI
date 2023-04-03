@@ -45,5 +45,17 @@ struct ContentView: View {
         .onAppear {
             isShowingSettings = !isKeyValid
         }
+        .task {
+            do {
+                var request = URLRequest(url: URL(string: "https://api.openai.com/v1/models")!)
+                request.addValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+                let (_, response) = try await URLSession.shared.data(for: request)
+                if ((response as? HTTPURLResponse)?.statusCode ?? 500) > 399 {
+                    isShowingSettings = true
+                }
+            } catch {
+                isShowingSettings = true
+            }
+        }
     }
 }
