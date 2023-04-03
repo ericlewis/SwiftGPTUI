@@ -19,6 +19,7 @@
 		68C5626729DB551F00A6BE88 /* OpenAI in Frameworks */ = {isa = PBXBuildFile; productRef = 68C5626629DB551F00A6BE88 /* OpenAI */; };
 		68C5626A29DB553500A6BE88 /* MessageKit in Frameworks */ = {isa = PBXBuildFile; productRef = 68C5626929DB553500A6BE88 /* MessageKit */; };
 		68D787A029DB61CF00FFCB14 /* ObservableSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68D7879F29DB61CF00FFCB14 /* ObservableSettings.swift */; };
+		68D787A229DB809200FFCB14 /* ConversationSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68D787A129DB809200FFCB14 /* ConversationSettingsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -33,6 +34,7 @@
 		68C5625F29DB54D200A6BE88 /* Models.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		68C5626029DB54D200A6BE88 /* SettingsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		68D7879F29DB61CF00FFCB14 /* ObservableSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservableSettings.swift; sourceTree = "<group>"; };
+		68D787A129DB809200FFCB14 /* ConversationSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationSettingsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -93,6 +95,7 @@
 				68C5624D29DB546600A6BE88 /* ContentView.swift */,
 				68C5625429DB546700A6BE88 /* Persistence.swift */,
 				68D7879F29DB61CF00FFCB14 /* ObservableSettings.swift */,
+				68D787A129DB809200FFCB14 /* ConversationSettingsView.swift */,
 			);
 			path = Source;
 			sourceTree = "<group>";
@@ -178,6 +181,7 @@
 				68C5626329DB54D200A6BE88 /* SettingsView.swift in Sources */,
 				68D787A029DB61CF00FFCB14 /* ObservableSettings.swift in Sources */,
 				68C5626129DB54D200A6BE88 /* MessagesView.swift in Sources */,
+				68D787A229DB809200FFCB14 /* ConversationSettingsView.swift in Sources */,
 				68C5625529DB546700A6BE88 /* Persistence.swift in Sources */,
 				68C5625829DB546700A6BE88 /* SwiftGPTUI.xcdatamodeld in Sources */,
 				68C5626229DB54D200A6BE88 /* Models.swift in Sources */,
@@ -314,6 +318,7 @@
 				DEVELOPMENT_TEAM = F9PGNEMEHU;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = GPTUI;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -343,6 +348,7 @@
 				DEVELOPMENT_TEAM = F9PGNEMEHU;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = GPTUI;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

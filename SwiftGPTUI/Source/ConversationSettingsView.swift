@@ -1,20 +1,7 @@
 import SwiftUI
 import OpenAI
 
-struct ParameterView<Value: BinaryFloatingPoint>: View where Value.Stride: BinaryFloatingPoint {
-    let title: LocalizedStringKey
-    let bounds: ClosedRange<Value>
-    
-    @Binding
-    var value: Value
-    
-    var body: some View {
-        Text(title).badge(Text(Double(value), format: .number))
-        Slider(value: $value, in: bounds, step: 0.1)
-    }
-}
-
-struct SettingsView: View {
+struct ConversationSettingsView: View {
     @Environment(\.dismiss)
     private var dismiss
     
@@ -26,33 +13,31 @@ struct SettingsView: View {
     
     @State
     private var isShowingConfirmedParamReset = false
-        
+    
     @EnvironmentObject
     private var settings: ObservableSettings
-
+    
+    @ObservedObject
+    var conversation: Conversation
+    
     var body: some View {
         NavigationView {
             List {
-                Section {
-                    HStack {
-                        TextField("API Key", text: settings.$apiKey)
-                            .autocorrectionDisabled(true)
-                            .textInputAutocapitalization(.never)
-                        Image(systemName: settings.isKeyValid ? "checkmark.circle.fill" : "xmark.circle.fill")
-                            .foregroundStyle(settings.isKeyValid ? .green : .red)
-                    }
-                } header: {
-                    Text("API")
-                } footer: {
-                    Text("**API key is required.** It is stored locally and is used only and directly with OpenAI. You can sign up for a developer account [here](https://platform.openai.com) in order to create a key.")
+                Section("Conversation Title") {
+                    TextField(
+                        "Conversation Title",
+                        text: $conversation.title.toUnwrapped(defaultValue: "")
+                    )
                 }
-                .disabled(false)
                 Section {
-                    TextField("System prompt", text: settings.$systemPrompt, axis: .vertical)
-                        .onSubmit {
-                            dismiss()
-                        }
-                    
+                    TextField(
+                        "System prompt",
+                        text: $conversation.systemPrompt.toUnwrapped(defaultValue: settings.systemPrompt),
+                        axis: .vertical
+                    )
+                    .onSubmit {
+                        dismiss()
+                    }
                     if settings.isLoading {
                         HStack {
                             Text("Model")
@@ -74,44 +59,41 @@ struct SettingsView: View {
                         ParameterView(
                             title: "Temperature",
                             bounds: 0...1,
-                            value: settings.$temperature
+                            value: $conversation.temperature
                         )
                         ParameterView(
                             title: "Top P",
                             bounds: 0...1,
-                            value: settings.$topP
+                            value: $conversation.topP
                         )
                         ParameterView(
                             title: "Frequency penalty",
                             bounds: -2...2,
-                            value: settings.$frequencyPenalty
+                            value: $conversation.frequencyPenalty
                         )
                         ParameterView(
                             title: "Presence penalty",
                             bounds: -2...2,
-                            value: settings.$presencePenalty
+                            value: $conversation.presencePenalty
                         )
                     } label: {
                         Text("Parameters")
                             .bold()
                     }
-                } header: {
-                    Text("Default Settings")
-                } footer: {
-                    Text("These settings will be the ones that are used when creating new conversations. You can always adjust this later in the conversation.")
                 }
                 .disabled(!settings.isKeyValid)
-
-                Section("Data management") {
-                    Button("Reset Default Parameters", role: .destructive) {
-                        settings.temperature = 0.7
-                        settings.topP = 1
-                        settings.frequencyPenalty = 0
-                        settings.presencePenalty = 0
+                
+                Section {
+                    Button("Reset Parameters", role: .destructive) {
+                        conversation.systemPrompt = settings.systemPrompt
+                        conversation.temperature = settings.temperature
+                        conversation.topP = settings.topP
+                        conversation.frequencyPenalty = settings.frequencyPenalty
+                        conversation.presencePenalty = settings.presencePenalty
                         isShowingConfirmedParamReset = true
                     }
                     .bold()
-                    Button("Delete All Conversations", role: .destructive) {
+                    Button("Reset Conversation", role: .destructive) {
                         isShowingResetConversationConfirmation.toggle()
                     }
                     .bold()
@@ -121,12 +103,12 @@ struct SettingsView: View {
             .alert("Parameters reset to defaults", isPresented: $isShowingConfirmedParamReset) {
                 Button("Okay") {}
             }
-            .alert("Delete All Conversations", isPresented: $isShowingResetConversationConfirmation) {
+            .alert("Reset Conversation", isPresented: $isShowingResetConversationConfirmation) {
                 Button("Reset", role: .destructive) {
                     resetConversationHistory()
                 }
             } message: {
-                Text("Please confirm if you would like to delete your entire conversation history.")
+                Text("Please confirm if you would like to reset your conversation history.")
             }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
@@ -153,10 +135,13 @@ struct SettingsView: View {
                 }
             }
         }
+        .onDisappear {
+            try? viewContext.save()
+        }
     }
 }
 
-extension SettingsView {
+extension ConversationSettingsView {
     func resetConversationHistory() {
         do {
             let fetchRequest = Message.fetchRequest()
@@ -169,5 +154,11 @@ extension SettingsView {
         } catch let error as NSError {
             print(error)
         }
+    }
+}
+
+extension Binding {
+    func toUnwrapped<T>(defaultValue: T) -> Binding<T> where Value == Optional<T>  {
+        Binding<T>(get: { self.wrappedValue ?? defaultValue }, set: { self.wrappedValue = $0 })
     }
 }

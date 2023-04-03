@@ -19,15 +19,17 @@ final class MessageSwiftUIVC: MessagesViewController {
 
 struct MessagesView: UIViewControllerRepresentable {
     final class Coordinator {
-        init(messages: FetchedResults<Message>, context: NSManagedObjectContext, vc: MessagesViewController) {
+        init(messages: FetchedResults<Message>, conversation: Conversation?, context: NSManagedObjectContext, vc: MessagesViewController) {
             self.messages = messages
             self.viewContext = context
             self.vc = vc
+            self.conversation = conversation
         }
 
         var vc: MessagesViewController
         var messages: FetchedResults<Message>
         var viewContext: NSManagedObjectContext
+        var conversation: Conversation?
         var openAI = OpenAI(apiToken: "")
         var model: Model = Model.gpt3_5Turbo
         var systemPrompt: String?
@@ -45,11 +47,22 @@ struct MessagesView: UIViewControllerRepresentable {
     @EnvironmentObject
     private var settings: ObservableSettings
     
+    @Binding
+    private var conversation: Conversation?
+    
     @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \Message.sentDateInternal, ascending: true)], animation: .default)
     private var messages: FetchedResults<Message>
     
     @Environment(\.managedObjectContext)
     private var viewContext
+    
+    init(conversation: Binding<Conversation?>) {
+        _messages = .init(
+            sortDescriptors: [NSSortDescriptor(keyPath: \Message.sentDateInternal, ascending: true)],
+            predicate: NSPredicate(format: "conversation.conversationId = %@", conversation.wrappedValue?.conversationId ?? "")
+        )
+        _conversation = conversation
+    }
     
     func makeUIViewController(context: Context) -> MessagesViewController {
         messagesVC.messagesCollectionView.messagesDisplayDelegate = context.coordinator
@@ -62,11 +75,11 @@ struct MessagesView: UIViewControllerRepresentable {
         layout?.setMessageIncomingAvatarSize(.zero)
         messagesVC.scrollsToLastItemOnKeyboardBeginsEditing = true // default false
         messagesVC.maintainPositionOnInputBarHeightChanged = true // default false
-        messagesVC.showMessageTimestampOnSwipeLeft = true // default false
         return messagesVC
     }
     
     func updateUIViewController(_ uiViewController: MessagesViewController, context ctx: Context) {
+        ctx.coordinator.conversation = conversation
         ctx.coordinator.systemPrompt = settings.systemPrompt
         ctx.coordinator.frequencyPenalty = settings.frequencyPenalty
         ctx.coordinator.presencePenalty = settings.presencePenalty
@@ -79,7 +92,7 @@ struct MessagesView: UIViewControllerRepresentable {
     }
     
     func makeCoordinator() -> Coordinator {
-        Coordinator(messages: messages, context: viewContext, vc: messagesVC)
+        Coordinator(messages: messages, conversation: conversation, context: viewContext, vc: messagesVC)
     }
     
     private func scrollToBottom(_ uiViewController: MessagesViewController) {
@@ -114,6 +127,8 @@ extension MessagesView.Coordinator: InputBarAccessoryViewDelegate {
                 message.sentDate = .now
                 message.sentBy = currentSender.senderId
                 message.text = text
+                conversation!.addToMessages(message)
+                conversation!.updatedAt = .now
                 try viewContext.save()
                 
                 // indicate we are waiting for a response and reset input
@@ -149,6 +164,8 @@ extension MessagesView.Coordinator: InputBarAccessoryViewDelegate {
                 resultMessage.sentDate = .now
                 resultMessage.sentBy = choice.message.role
                 resultMessage.text = choice.message.content
+                conversation!.addToMessages(resultMessage)
+                conversation!.updatedAt = .now
                 try viewContext.save()
             } catch {
                 print(error)
