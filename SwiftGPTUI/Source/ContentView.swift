@@ -14,6 +14,18 @@ struct ContentView: View {
     @AppStorage("OPENAI_SYSTEM_PROMPT")
     private var systemPrompt = ""
     
+    @AppStorage("OPENAI_TEMP")
+    private var temperature = 0.7
+    
+    @AppStorage("OPENAI_TOP_P")
+    private var topP = 1.0
+    
+    @AppStorage("OPENAI_FREQ_PEN")
+    private var frequencyPenalty = 0.0
+    
+    @AppStorage("OPENAI_PRES_PEN")
+    private var presencePenalty = 0.0
+    
     var isKeyValid: Bool {
         do {
             let regex = try NSRegularExpression(pattern: "sk-\\w{20}T3BlbkFJ\\w{20}", options: [])
@@ -26,20 +38,36 @@ struct ContentView: View {
     
     var body: some View {
         NavigationView {
-            MessagesView(apiKey: $apiKey, model: $model, systemPrompt: $systemPrompt)
-                .edgesIgnoringSafeArea(.all)
-                .navigationTitle(model.uppercased())
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    Button {
-                        isShowingSettings.toggle()
-                    } label: {
-                        Label("Settings", systemImage: "gear")
-                    }
+            MessagesView(
+                apiKey: $apiKey,
+                model: $model,
+                systemPrompt: $systemPrompt,
+                temperature: $temperature,
+                topP: $topP,
+                frequencyPenalty: $frequencyPenalty,
+                presencePenalty: $presencePenalty
+            )
+            .edgesIgnoringSafeArea(.all)
+            .navigationTitle(model.uppercased())
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                Button {
+                    isShowingSettings.toggle()
+                } label: {
+                    Label("Settings", systemImage: "gear")
                 }
-                .sheet(isPresented: $isShowingSettings) {
-                    SettingsView(systemPrompt: $systemPrompt, apiKey: $apiKey, model: $model)
-                }
+            }
+            .sheet(isPresented: $isShowingSettings) {
+                SettingsView(
+                    temperature: $temperature,
+                    topP: $topP,
+                    frequencyPenalty: $frequencyPenalty,
+                    presencePenalty: $presencePenalty,
+                    systemPrompt: $systemPrompt,
+                    apiKey: $apiKey,
+                    model: $model
+                )
+            }
         }
         .navigationViewStyle(.stack)
         .onAppear {

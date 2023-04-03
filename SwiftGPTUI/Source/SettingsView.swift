@@ -25,21 +25,19 @@ struct SettingsView: View {
     private var isShowingResetConversationConfirmation = false
     
     @State
-    private var temperature = 0.7
-    
-    @State
-    private var topP = 1.0
-    
-    @State
-    private var frequencyPenalty = 0.0
-    
-    @State
-    private var presencePenalty = 0.0
-    
-    @State
     private var models = [Model.gpt3_5Turbo]
+        
+    @Binding
+    var temperature: Double
     
-    private let enableParameters = false
+    @Binding
+    var topP: Double
+    
+    @Binding
+    var frequencyPenalty: Double
+    
+    @Binding
+    var presencePenalty: Double
     
     @Binding
     var systemPrompt: String
@@ -88,16 +86,14 @@ struct SettingsView: View {
                         Text("Model")
                             .bold()
                     }
-                    if enableParameters {
-                        DisclosureGroup {
-                            ParameterView(title: "Temperature", bounds: 0...1, value: $temperature)
-                            ParameterView(title: "Top P", bounds: 0...1, value: $topP)
-                            ParameterView(title: "Frequency penalty", bounds: -2...2, value: $frequencyPenalty)
-                            ParameterView(title: "Presence penalty", bounds: -2...2, value: $presencePenalty)
-                        } label: {
-                            Text("Parameters")
-                                .bold()
-                        }
+                    DisclosureGroup {
+                        ParameterView(title: "Temperature", bounds: 0...1, value: $temperature)
+                        ParameterView(title: "Top P", bounds: 0...1, value: $topP)
+                        ParameterView(title: "Frequency penalty", bounds: -2...2, value: $frequencyPenalty)
+                        ParameterView(title: "Presence penalty", bounds: -2...2, value: $presencePenalty)
+                    } label: {
+                        Text("Parameters")
+                            .bold()
                     }
                 }
                 .disabled(!isKeyValid)

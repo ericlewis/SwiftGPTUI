@@ -31,6 +31,10 @@ struct MessagesView: UIViewControllerRepresentable {
         var openAI = OpenAI(apiToken: "")
         var model: Model = Model.gpt3_5Turbo
         var systemPrompt: String?
+        var temperature: Double = 0.7
+        var topP: Double = 1
+        var frequencyPenalty: Double = 0
+        var presencePenalty: Double = 0
     }
     
     let messagesVC = MessageSwiftUIVC()
@@ -46,6 +50,18 @@ struct MessagesView: UIViewControllerRepresentable {
     
     @Binding
     var systemPrompt: String
+    
+    @Binding
+    var temperature: Double
+    
+    @Binding
+    var topP: Double
+    
+    @Binding
+    var frequencyPenalty: Double
+    
+    @Binding
+    var presencePenalty: Double
     
     @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \Message.sentDateInternal, ascending: true)], animation: .default)
     private var messages: FetchedResults<Message>
@@ -70,6 +86,10 @@ struct MessagesView: UIViewControllerRepresentable {
     
     func updateUIViewController(_ uiViewController: MessagesViewController, context ctx: Context) {
         ctx.coordinator.systemPrompt = systemPrompt
+        ctx.coordinator.frequencyPenalty = frequencyPenalty
+        ctx.coordinator.presencePenalty = presencePenalty
+        ctx.coordinator.temperature = temperature
+        ctx.coordinator.topP = topP
         ctx.coordinator.openAI = OpenAI(apiToken: apiKey)
         ctx.coordinator.messages = messages
         uiViewController.messagesCollectionView.reloadData()
@@ -127,7 +147,15 @@ extension MessagesView.Coordinator: InputBarAccessoryViewDelegate {
                 }
                 
                 // wala
-                let result = try await openAI.chats(query: OpenAI.ChatQuery(model: model, messages: history))
+                let query = OpenAI.ChatQuery(
+                    model: model,
+                    messages: history,
+                    temperature: temperature,
+                    topP: topP,
+                    presencePenalty: presencePenalty,
+                    frequencyPenalty: frequencyPenalty
+                )
+                let result = try await openAI.chats(query: query)
                 
                 // we are done typing
                 await vc.setTypingIndicatorViewHidden(true, animated: true)
