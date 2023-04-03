@@ -100,7 +100,6 @@ struct SettingsView: View {
                     .bold()
                 }
                 .disabled(!settings.isKeyValid)
-
             }
             .alert("Reset Conversation", isPresented: $isShowingResetConversationConfirmation) {
                 Button("Reset", role: .destructive) {
