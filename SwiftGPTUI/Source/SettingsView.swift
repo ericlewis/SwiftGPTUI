@@ -46,6 +46,8 @@ struct SettingsView: View {
     @State
     private var presencePenalty = 0.0
     
+    private let enableParameters = false
+    
     @Binding
     var systemPrompt: String
     
@@ -93,14 +95,16 @@ struct SettingsView: View {
                         Text("Model")
                             .bold()
                     }
-                    DisclosureGroup {
-                        ParameterView(title: "Temperature", bounds: 0...1, value: $temperature)
-                        ParameterView(title: "Top P", bounds: 0...1, value: $topP)
-                        ParameterView(title: "Frequency penalty", bounds: -2...2, value: $frequencyPenalty)
-                        ParameterView(title: "Presence penalty", bounds: -2...2, value: $presencePenalty)
-                    } label: {
-                        Text("Parameters")
-                            .bold()
+                    if enableParameters {
+                        DisclosureGroup {
+                            ParameterView(title: "Temperature", bounds: 0...1, value: $temperature)
+                            ParameterView(title: "Top P", bounds: 0...1, value: $topP)
+                            ParameterView(title: "Frequency penalty", bounds: -2...2, value: $frequencyPenalty)
+                            ParameterView(title: "Presence penalty", bounds: -2...2, value: $presencePenalty)
+                        } label: {
+                            Text("Parameters")
+                                .bold()
+                        }
                     }
                 }
                 .disabled(!isKeyValid)
